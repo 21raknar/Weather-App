@@ -2,49 +2,55 @@ import React, { Component } from "react";
 import Location from "./Location";
 import WeatherData from "./WeatherData";
 import "./styles.css";
-import { SUN, WINDY } from "../../constants/weathers";
-
-const data = {
-  temperature: 5,
-  weatherState: SUN,
-  humidity: 10,
-  wind: "10 m/s",
-};
-
-const data2 = {
-  temperature: 15,
-  weatherState: WINDY,
-  humidity: 20,
-  wind: "10 m/s",
-};
+import transformWeather from "../../services/transformWeather";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import { PropTypes } from "prop-types";
+import getUrlWeatherByCity from "../../services/getUrlWeatherByCity";
 
 class WeatherLocation extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+    const { city } = props;
     this.state = {
-      city: "León",
-      data: data,
+      city,
+      data: null,
     };
+    console.log("constructor");
+  }
+
+  componentDidMount() {
+    this.handleUpadteClick();
   }
 
   handleUpadteClick = () => {
-    console.log("Actualizado");
-    this.setState({
-      city: "Llion",
-      data: data2,
-    });
+    const api_weather = getUrlWeatherByCity(this.state.city);
+    fetch(api_weather)
+      .then((resolve) => {
+        return resolve.json();
+      })
+      .then((data) => {
+        const newWeather = transformWeather(data);
+        console.log(newWeather);
+        this.setState({
+          data: newWeather,
+        });
+      });
   };
 
   render() {
+    const { onWeatherLocationClick } = this.props;
     const { data, city } = this.state;
     return (
-      <div className="weatherLocationCont">
+      <div className="weatherLocationCont" onClick={onWeatherLocationClick}>
         <Location city={city} />
-        <WeatherData data={data} />
-        <button onClick={this.handleUpadteClick}>Actualizar</button>
+        {data ? <WeatherData data={data} /> : <CircularProgress />}
       </div>
     );
   }
 }
 
+WeatherLocation.propTypes = {
+  city: PropTypes.string.isRequired,
+  onWeatherLocationClick: PropTypes.func,
+};
 export default WeatherLocation;
