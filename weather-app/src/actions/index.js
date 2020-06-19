@@ -46,8 +46,8 @@ export const setWeather = (payload) => {
           return data.json();
         })
         .then((weather_data) => {
-          const data = transformWeather(weather_data);
-          dispatch(setWeatherCity({ city, data }));
+          const weather = transformWeather(weather_data);
+          dispatch(setWeatherCity({ city, weather }));
         });
     });
   };
